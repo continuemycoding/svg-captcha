@@ -25,18 +25,33 @@ npm install --save svg-captcha
 
 ## 使用方法
 ```Javascript
-var svgCaptcha = require('svg-captcha');
+const http = require('http');
+const svgCaptcha = require('svg-captcha');
 
-var c = svgCaptcha.create();
-console.log(c);
-// {data: '<svg.../svg>', text: 'abcd'}
+const hostname = '127.0.0.1';
+const port = 3000;
+
+const server = http.createServer((req, res) => {
+	if (req.url == "/favicon.ico")
+		return;
+
+	const captcha = svgCaptcha.create({ noise: 2, color: false });
+	console.log(captcha.text);
+	res.statusCode = 200;
+	res.setHeader('Content-Type', 'image/svg+xml');
+	res.end(captcha.data);
+});
+
+server.listen(port, hostname, () => {
+	console.log(`Server running at http://${hostname}:${port}/`);
+});
 ```
 在 express中使用
 ```Javascript
-var svgCaptcha = require('svg-captcha');
+const svgCaptcha = require('svg-captcha');
 
 app.get('/captcha', function (req, res) {
-	var captcha = svgCaptcha.create();
+	const captcha = svgCaptcha.create();
 	req.session.captcha = captcha.text;
 	
 	res.type('svg'); // 使用ejs等模板时如果报错 res.type('html')
